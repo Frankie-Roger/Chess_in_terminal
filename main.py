@@ -13,9 +13,6 @@ def main():
     player = player2
     pieces_names = ['Pawn', 'King', 'Queen', 'Tower', 'Knight', 'Bishop']
 
-    chess.board[4][6] = ''
-    chess.board[4][1] = ''
-
     while True:
 
         if player == player1:
