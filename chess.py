@@ -157,9 +157,7 @@ class ChessBoard:
                 piece = self.board[l][n]
                 if isinstance(piece, Piece):
                     if piece.black == player.is_black and piece.type == 0:
-                        print(piece.en_passant, end=' ')
                         piece.en_passant = False
-        print("\n")
 
     def print_c_board(self):
 
