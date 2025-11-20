@@ -44,9 +44,9 @@ def main():
         if check_check(chess, player.is_black):
             print("\n   'CHECK!'  <--")
             if player.bot:
-                sleep(SLEEP2)
+                sleep(SLEEP2/2)
             else:
-                sleep(SLEEP1)
+                sleep(SLEEP1/2)
         else:
             print("\n")
         if player == player1:
@@ -55,9 +55,9 @@ def main():
             print("         -->  Black turn  <--")
         chess.print_c_board()
         if player.bot:
-            sleep(SLEEP2/2)
+            sleep(SLEEP2/4)
             make_rand_move(chess, player)
-            sleep(SLEEP2/2)
+            sleep(SLEEP2)
             continue
         while True:
             move_from, move_to = get_move_player(chess, player)
