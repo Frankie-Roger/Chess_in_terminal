@@ -1,6 +1,10 @@
+from time import sleep
 from chess import *
 
 BOT = False   # True for 1P mode
+
+SLEEP1 = 2
+SLEEP2 = 1
 
 
 def main():
@@ -9,6 +13,9 @@ def main():
     chess.init_board()
     player = player2
     pieces_names = ['Pawn', 'King', 'Queen', 'Tower', 'Knight', 'Bishop']
+
+    chess.board[4][6] = ''
+    chess.board[4][1] = ''
 
     while True:
 
@@ -37,7 +44,10 @@ def main():
         chess.print_eaten()
         if check_check(chess, player.is_black):
             print("\n   'CHECK!'  <--")
-            sleep(1)
+            if player.bot:
+                sleep(SLEEP2)
+            else:
+                sleep(SLEEP1)
         else:
             print("\n")
         if player == player1:
@@ -45,27 +55,28 @@ def main():
         else:
             print("         -->  Black turn  <--")
         chess.print_c_board()
-                if BOT and player.bot:
-            sleep(0.5)
+        if player.bot:
+            sleep(SLEEP2/2)
             make_rand_move(chess, player)
+            sleep(SLEEP2/2)
             continue
         while True:
             move_from, move_to = get_move_player(chess, player)
             action, piece = get_action(chess, move_from, move_to)
             if castling(chess, move_from, move_to, player):
                 print(f"\nCastling from {move_from} to {move_to} ...\n\n...\n")
-                sleep(2)
+                sleep(SLEEP1)
                 break
             elif en_passant(chess, move_from, move_to, player):
                 print(f"\nEn passant from {move_from} to {move_to} ...\n\n...\n")
-                sleep(2)
+                sleep(SLEEP1)
                 break
             elif chess.move(move_from, move_to):
                 pawn_transformation(chess, move_to, player)
                 print(f"\n{pieces_names[piece]} {action}from {move_from} to {move_to} ...\n\n...\n")
                 check_en_passant(chess, move_from, move_to, player)
                 check_castling(move_from, player)
-                sleep(1.5)
+                sleep(SLEEP1)
                 break
             else:
                 print("Move is not legal...Try again\n")
