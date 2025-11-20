@@ -8,6 +8,7 @@ def main():
     chess = ChessBoard(player1, player2)
     chess.init_board()
     player = player2
+    pieces_names = ['Pawn', 'King', 'Queen', 'Tower', 'Knight', 'Bishop']
 
     while True:
 
@@ -35,7 +36,8 @@ def main():
 
         chess.print_eaten()
         if check_check(chess, player.is_black):
-            print("   'CHECK!'")
+            print("\n   'CHECK!'  <--")
+            sleep(1)
         else:
             print("\n")
         if player == player1:
@@ -47,24 +49,24 @@ def main():
             if BOT and player == player2:
                 sleep(0.5)
                 make_rand_move(chess, player)
-                sleep(2)
                 break
             else:
                 move_from, move_to = get_move_player(chess, player)
+                action, piece = get_action(chess, move_from, move_to)
                 if castling(chess, move_from, move_to, player):
                     print(f"\nCastling from {move_from} to {move_to} ...\n\n...\n")
-                    sleep(1)
+                    sleep(2)
                     break
                 elif en_passant(chess, move_from, move_to, player):
                     print(f"\nEn passant from {move_from} to {move_to} ...\n\n...\n")
-                    sleep(1)
+                    sleep(2)
                     break
                 elif chess.move(move_from, move_to):
-                    pawn_transformation(chess, move_to)
-                    print(f"\nMoving from {move_from} to {move_to} ...\n\n...\n")
+                    pawn_transformation(chess, move_to, player)
+                    print(f"\n{pieces_names[piece]} {action}from {move_from} to {move_to} ...\n\n...\n")
                     check_en_passant(chess, move_from, move_to, player)
                     check_castling(move_from, player)
-                    sleep(1)
+                    sleep(1.5)
                     break
                 else:
                     print("Move is not legal...Try again\n")
