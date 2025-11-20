@@ -1,4 +1,3 @@
-from time import sleep
 from chess import *
 
 BOT = False   # True for 1P mode
