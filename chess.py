@@ -367,38 +367,27 @@ def get_move_player(chess, player):
         except ValueError:
             keep = True
             print("\nFormat is not correct.\nNeeds to be like this: ES.'A1 in B2'\nTry again...")
-            sleep(1)
             chess.print_c_board()
-            continue
         if not keep:
             if not isinstance(move_from, str) or not isinstance(move_to, str):
                 print("\nFormat is not correct.\nNeeds to be like this: ES.'A1 in B2'\nTry again...")
                 keep = True  # wrong spot format
-                sleep(1)
                 chess.print_c_board()
             else:
                 if len(move_from) > 2 or len(move_to) > 2 or len(move_from) < 2 or len(move_to) < 2:
                     print("\nFormat is not correct.\nNeeds to be like this: ES.'A1 in B2'\nTry again...")
                     keep = True  # wrong spot format
-                    sleep(1)
                     chess.print_c_board()
 
-            if check_from_spot(chess, move_from, player.is_black):
-                keep = True  # starting spot is not legal
-                print("\nMove is not legal...Try again\n")
-                sleep(1)
-                chess.print_c_board()
-                continue
+            if not keep:
+                if check_from_spot(chess, move_from, player.is_black) or check_to_spot(chess, move_to, player.is_black):
+                    keep = True  # starting spot is not legal
+                    print("\nMove is not legal...Try again\n")
+                    chess.print_c_board()
 
-            if check_to_spot(chess, move_to, player.is_black):
-                keep = True  # destination spot is not legal
-                print("\nMove is not legal...Try again\n")
-
-                sleep(1)
-                chess.print_c_board()
-                continue
         if not keep:
             break
+        sleep(2)
     return move_from.capitalize(), move_to.capitalize()
 
 
