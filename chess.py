@@ -229,6 +229,9 @@ class ChessBoard:
 
         white_eaten.append(WHITE_SHAPE[2])
         black_eaten.append(BLACK_SHAPE[2])
+        space1, space2 = 0, 0
+        w_points, b_points = 0, 0
+        point = [1, 1, 9, 3, 3, 5]
 
         for i in range(2):
             white_eaten.append(WHITE_SHAPE[3])
@@ -248,7 +251,6 @@ class ChessBoard:
 
         for l in range(8):
             for n in range(8):
-                # piece =
                 if isinstance(self.board[l][n], Piece):
                     if self.board[l][n].type != 1:
                         if self.board[l][n].black:
@@ -256,21 +258,47 @@ class ChessBoard:
                                 black_eaten.remove(BLACK_SHAPE[self.board[l][n].type])
                             except ValueError:
                                 black_eaten.remove(BLACK_SHAPE[0])
+                                b_points += point[self.board[l][n].type]
                         else:
                             try:
                                 white_eaten.remove(WHITE_SHAPE[self.board[l][n].type])
                             except ValueError:
                                 white_eaten.remove(WHITE_SHAPE[0])
+                                w_points += point[self.board[l][n].type]
+
         if len(white_eaten) == 0 and len(black_eaten) == 0:
             return 0
 
         print(" -------------------------------------------------------------------\n  ", end='')
-        for p in white_eaten:
-            print(p, end=' ')
-        print("\n  ", end='')
+
         for p in black_eaten:
             print(p, end=' ')
-        print("")
+            space2 += 2
+            if p == BLACK_SHAPE[0]:
+                w_points += 1
+            elif p == BLACK_SHAPE[2]:
+                w_points += 9
+            elif p == BLACK_SHAPE[5] or p == BLACK_SHAPE[4]:
+                w_points += 3
+            elif p == BLACK_SHAPE[3]:
+                w_points += 5
+
+        print(((56 - space2) * " ") + "white " + '+' + str(w_points))
+        print("  ", end='')
+
+        for p in white_eaten:
+            print(p, end=' ')
+            space1 += 2
+            if p == WHITE_SHAPE[0]:
+                b_points += 1
+            elif p == WHITE_SHAPE[2]:
+                b_points += 9
+            elif p == WHITE_SHAPE[5] or p == WHITE_SHAPE[4]:
+                b_points += 3
+            elif p == WHITE_SHAPE[3]:
+                b_points += 5
+
+        print(((56 - space1) * " ") + "black " + '+' + str(b_points))
         print(" -------------------------------------------------------------------  ", end='')
         return 1
 
@@ -358,24 +386,42 @@ def get_action(chess, move_from, move_to):
 
 def get_move_player(chess, player):
     Keep = True
+    can_draw = True
     while Keep:
-        move = input("\n(ES.'A1 in B2')\nInsert move --> ")
+        print("\nInsert 'quit' to give up and 'draw' to ask for a draw.\nExample  -->  ('A1 in B2')\n")
+        move = input("Insert move --> ")
         keep = False
         move_from, move_to = '', ''
+        if move.strip().lower() == 'quit':
+            return 'quit', 'quit'
+        if can_draw:
+            if move.strip().lower() == 'draw':
+                if player.is_black:
+                    print("\nWhite player, do you accept the draw?")
+                else:
+                    print("\nBlack player, do you accept the draw?")
+                if input("Insert 'yes' to accept: ").strip().lower() == 'yes':
+                    return 'draw', 'draw'
+                else:
+                    print("\nDraw not accepted. \n\nCan't ask to draw again this turn.\n")
+                    sleep(1)
+                    can_draw = False
+                    continue
         try:
             move_from, move_to = move.split(" in ", 1)
+            move_from, move_to = move_from.strip(), move_to.strip()
         except ValueError:
             keep = True
-            print("\nFormat is not correct.\nNeeds to be like this: ES.'A1 in B2'\nTry again...")
+            print("\nFormat is not correct.\nNeeds to be like this: ES.'A1 in B2'\nTry again...\n")
             chess.print_c_board()
         if not keep:
             if not isinstance(move_from, str) or not isinstance(move_to, str):
-                print("\nFormat is not correct.\nNeeds to be like this: ES.'A1 in B2'\nTry again...")
+                print("\nFormat is not correct.\nNeeds to be like this: ES.'A1 in B2'\nTry again...\n")
                 keep = True  # wrong spot format
                 chess.print_c_board()
             else:
                 if len(move_from) > 2 or len(move_to) > 2 or len(move_from) < 2 or len(move_to) < 2:
-                    print("\nFormat is not correct.\nNeeds to be like this: ES.'A1 in B2'\nTry again...")
+                    print("\nFormat is not correct.\nNeeds to be like this: ES.'A1 in B2'\nTry again...\n")
                     keep = True  # wrong spot format
                     chess.print_c_board()
 
@@ -427,7 +473,7 @@ def check_to_spot(chess, spot, black):
     return 0
 
 
-def check_legal(chess, spot_from,  po_moves):
+def check_legal(chess, spot_from, po_moves):
     available_moves = po_moves.copy()
     no_moves = set()
     fl, fn = letter_to_number(spot_from[0]), int(spot_from[1]) - 1
@@ -439,6 +485,7 @@ def check_legal(chess, spot_from,  po_moves):
         chess.reset2()
         chess.board2[l][n] = chess.board2[fl][fn]
         chess.board2[fl][fn] = ''
+        king_spot = "ZZ"
 
         for lk in range(8):  # find own king
             for nk in range(8):
@@ -447,14 +494,17 @@ def check_legal(chess, spot_from,  po_moves):
                         king_spot = number_to_letter(lk) + str(nk + 1)
 
         # check among all the other player legal moves in board2, if there is the same one as the king is at
-        for lt in range(8):
-            for nt in range(8):
-                if isinstance(chess.board2[lt][nt], Piece):
-                    if chess.board2[lt][nt].black != color:
-                        moves2 = av_moves(chess, number_to_letter(lt) + str(nt+1), True)
-                        for m2 in moves2:
-                            if king_spot == m2:
-                                no_moves.add(move)
+        if king_spot == 'ZZ':
+            no_moves.add(move)
+        else:
+            for lt in range(8):
+                for nt in range(8):
+                    if isinstance(chess.board2[lt][nt], Piece):
+                        if chess.board2[lt][nt].black != color:
+                            moves2 = av_moves(chess, number_to_letter(lt) + str(nt + 1), True)
+                            for m2 in moves2:
+                                if king_spot == m2:
+                                    no_moves.add(move)
     for m in no_moves:
         available_moves.remove(m)
     return available_moves
@@ -484,18 +534,16 @@ def av_moves(chess, spot_from, test=False):
     return av_moves
 
 
-def check_checkmate(chess, turn_color):  # 1 -> checkmate | 2 -> stallo
+def check_checkmate(chess, turn_color):
     legal_moves = []
-    pos_moves = []
+
     for l, x in enumerate(chess.board):
         for n, spot in enumerate(x):
             if isinstance(spot, Piece):
                 if spot.black == turn_color:
-                    i_pos_moves = av_moves(chess, number_to_letter(l) + str(n+1))
-                    pos_moves = pos_moves + i_pos_moves
-                    legal_moves = legal_moves + check_legal(chess, number_to_letter(l) + str(n+1), i_pos_moves)
-    if len(pos_moves) == 0:
-        return 2
+                    pos_moves = av_moves(chess, number_to_letter(l) + str(n+1), True)
+                    legal_moves = legal_moves + check_legal(chess, number_to_letter(l) + str(n+1), pos_moves)
+
     if len(legal_moves) == 0:
         return 1
     return 0
@@ -541,11 +589,11 @@ def choose_transf_option(player):
             except ValueError:
                 print("Wrong input, only insert a number from 0 to 4.\nTry again...\n\n")
                 continue
-            if t > 0:
-                t = t + 1
             if 0 <= t <= 5:
                 break
             print("Wrong input, only insert a number from 0 to 4.\nTry again...\n\n")
+    if t > 0:
+        t = t + 1
     return t
 
 
@@ -1003,8 +1051,14 @@ def make_rand_move(chess, player):
                     spot_from = number_to_letter(l) + str(n + 1)
                     if len(check_legal(chess, spot_from, av_moves(chess, spot_from))) > 0:
                         spots_from.append(spot_from)
-                        i = i + 1
-    r = random.randint(0, i-1)
+                        i += 1
+    if i == 0:
+        print("Error")
+        return 1
+    elif i == 1:
+        r = 0
+    else:
+        r = random.randint(0, i - 1)
     spot_from = spots_from[r]
     moves = check_legal(chess, spot_from, av_moves(chess, spot_from))
     spot_to = random.choice(moves)
