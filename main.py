@@ -7,13 +7,14 @@ SLEEP2 = 1
 
 
 def main():
-    player1, player2 = Player(), Player(BOT)
+    player1, player2 = Player(BOT), Player(BOT)
     chess = ChessBoard(player1, player2)
     chess.init_board()
     player = player2
     pieces_names = ['Pawn', 'King', 'Queen', 'Tower', 'Knight', 'Bishop']
+    play = True
 
-    while True:
+    while play:
 
         if player == player1:
             player = player2
@@ -21,22 +22,26 @@ def main():
             player = player1
         chess.reset_en_passant(player)
 
-        ckmate = check_checkmate(chess, player.is_black)
-        if ckmate == 1:
-            chess.print_c_board()
+        if check_checkmate(chess, player.is_black):
             if player == player1:
-                print("\n              'CHECKMATE'")
-                print("     -->  BLACK PLAYER WINS !!!  <--\n\n")
+                print("         -->  White turn  <--")
             else:
-                print("\n              'CHECKMATE'")
-                print("\n    -->  WHITE PLAYER WINS !!!  <--\n\n")
-            break
-        elif ckmate == 2:
+                print("         -->  Black turn  <--")
             chess.print_c_board()
-            print("\n         'STALEMATE'")
-            print("     -->  NO-ONE WINS !!!  <--\n\n")
+            if not check_check(chess, player.is_black):
+                print("\n         'STALEMATE'")
+                print("     -->  NO-ONE WINS !!!  <--\n\n")
+            else:
+                if player == player1:
+                    print("\n              'CHECKMATE'")
+                    print("     -->  BLACK PLAYER WINS !!!  <--\n\n")
+                else:
+                    print("\n              'CHECKMATE'")
+                    print("\n    -->  WHITE PLAYER WINS !!!  <--\n\n")
+            play = False
             break
-
+        if not play:
+            break
         chess.print_eaten()
         if check_check(chess, player.is_black):
             print("\n   'CHECK!'  <--")
@@ -58,34 +63,51 @@ def main():
             continue
         while True:
             move_from, move_to = get_move_player(chess, player)
-            action, piece = get_action(chess, move_from, move_to)
-            if castling(chess, move_from, move_to, player):
-                print(f"\nCastling from {move_from} to {move_to} ...\n\n...\n")
-                sleep(SLEEP1)
+            if move_from == 'quit':
+                if player.is_black:
+                    winner = 'WHITE'
+                    loser = 'BLACK'
+                else:
+                    winner = 'BLACK'
+                    loser = 'WHITE'
+                print(f"\n           '{loser} GAVE UP!'")
+                print(f"\n    -->  {winner} PLAYER WINS !!!  <--\n\n")
+                play = False
                 break
-            elif en_passant(chess, move_from, move_to, player):
-                print(f"\nEn passant from {move_from} to {move_to} ...\n\n...\n")
-                sleep(SLEEP1)
-                break
-            elif chess.move(move_from, move_to):
-                pawn_transformation(chess, move_to, player)
-                print(f"\n{pieces_names[piece]} {action}from {move_from} to {move_to} ...\n\n...\n")
-                check_en_passant(chess, move_from, move_to, player)
-                check_castling(move_from, player)
-                sleep(SLEEP1)
+            elif move_from == 'draw':
+                print("\n           'DRAW'")
+                print("     -->  NO-ONE WINS !!!  <--\n\n")
+                play = False
                 break
             else:
-                print("Move is not legal...Try again\n")
-                sleep(1)
-                if check_check(chess, player.is_black):
-                    print("   'CHECK!'")
+                action, piece = get_action(chess, move_from, move_to)
+                if castling(chess, move_from, move_to, player):
+                    print(f"\nCastling from {move_from} to {move_to} ...\n\n...\n")
+                    sleep(SLEEP1)
+                    break
+                elif en_passant(chess, move_from, move_to, player):
+                    print(f"\nEn passant from {move_from} to {move_to} ...\n\n...\n")
+                    sleep(SLEEP1)
+                    break
+                elif chess.move(move_from, move_to):
+                    pawn_transformation(chess, move_to, player)
+                    print(f"\n{pieces_names[piece]} {action}from {move_from} to {move_to} ...\n\n...\n")
+                    check_en_passant(chess, move_from, move_to, player)
+                    check_castling(move_from, player)
+                    sleep(SLEEP1)
+                    break
                 else:
-                    print("\n")
-                if player == player1:
-                    print("         -->  White turn  <--")
-                else:
-                    print("         -->  Black turn  <--")
-                chess.print_c_board()
+                    print("Move is not legal...Try again\n")
+                    sleep(1)
+                    if check_check(chess, player.is_black):
+                        print("   'CHECK!'")
+                    else:
+                        print("\n")
+                    if player == player1:
+                        print("         -->  White turn  <--")
+                    else:
+                        print("         -->  Black turn  <--")
+                    chess.print_c_board()
     return 0
 
 
